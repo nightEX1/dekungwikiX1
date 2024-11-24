@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ขุดทองไปเรื่อย</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #f9d423, #ff4e50);
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .login-box, .game-box {
+      background: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 5px;
+      border: none;
+      background: #ff4e50;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .button:hover {
+      background: #f9d423;
+      color: #333;
+    }
+    .gold-counter {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+    .worker-list {
+      text-align: left;
+      margin: 20px auto;
+      background: #f2f2f2;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 600px;
+    }
+    .worker {
+      margin-bottom: 10px;
+    }
+    .worker-name {
+      font-weight: bold;
+      color: #333;
+    }
+    .worker-power {
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Page -->
+    <div id="login-page" class="login-box">
+      <h1>เข้าสู่ระบบ</h1>
+      <input type="text" id="username" placeholder="ชื่อผู้ใช้" />
+      <input type="password" id="password" placeholder="รหัสผ่าน" />
+      <button class="button" onclick="login()">เข้าสู่ระบบ</button>
+      <p>หรือ</p>
+      <button class="button" onclick="showRegister()">สมัครสมาชิก</button>
+    </div>
+
+    <!-- Register Page -->
+    <div id="register-page" class="login-box" style="display: none;">
+      <h1>สมัครสมาชิก</h1>
+      <input type="text" id="register-username" placeholder="ชื่อผู้ใช้" />
+      <input type="password" id="register-password" placeholder="รหัสผ่าน" />
+      <button class="button" onclick="register()">สมัคร</button>
+      <p>กลับไปที่ <a href="#" onclick="showLogin()">เข้าสู่ระบบ</a></p>
+    </div>
+
+    <!-- Game Page -->
+    <div id="game-page" class="game-box" style="display: none;">
+      <h1>ขุดทองเพื่อลืมเธอ</h1>
+      <div class="gold-counter">ทองสะสม: <span id="gold-count">0</span> กรัม</div>
+      <button class="button" onclick="startMining()">เริ่มขุด</button>
+      <button class="button" onclick="stopMining()">หยุดขุด</button>
+      <button class="button" onclick="showSettings()">ตั้งค่า</button>
+
+      <!-- Worker List -->
+      <div class="worker-list" id="worker-list">
+        <h2>คนงานของคุณ</h2>
+        <div id="workers"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // User Data
+    let users = [];
+    let currentUser = null;
+    let gold = 0;
+    let isMining = false;
+    let workers = [];
+
+    // Worker Example
+    function addWorker(name, strength, luck, speed) {
+      workers.push({ name, strength, luck, speed });
+      updateWorkerList();
+    }
+
+    // Login
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        currentUser = user;
+        document.getElementById("login-page").style.display = "none";
+        document.getElementById("game-page").style.display = "block";
+      } else {
+        alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!");
+      }
+    }
+
+    // Register
+    function register() {
+      const username = document.getElementById("register-username").value;
+      const password = document.getElementById("register-password").value;
+
+      if (username && password) {
+        users.push({ username, password });
+        alert("สมัครสมาชิกสำเร็จ!");
+        showLogin();
+      } else {
+        alert("กรุณากรอกข้อมูลให้ครบถ้วน!");
+      }
+    }
+
+    // Show Login
+    function showLogin() {
+      document.getElementById("register-page").style.display = "none";
+      document.getElementById("login-page").style.display = "block";
+    }
+
+    // Show Register
+    function showRegister() {
+      document.getElementById("login-page").style.display = "none";
+      document.getElementById("register-page").style.display = "block";
+    }
+
+    // Start Mining
+    function startMining() {
+      if (!isMining) {
+        isMining = true;
+        mineGold();
+      }
+    }
+
+    // Stop Mining
+    function stopMining() {
+      isMining = false;
+    }
+
+    // Mine Gold
+    function mineGold() {
+      if (isMining) {
+        gold += 10; // Add gold
+        document.getElementById("gold-count").innerText = gold;
+        setTimeout(mineGold, 1000); // Continue mining every second
+      }
+    }
+
+    // Update Worker List
+    function updateWorkerList() {
+      const workerDiv = document.getElementById("workers");
+      workerDiv.innerHTML = "";
+      workers.forEach(worker => {
+        workerDiv.innerHTML += `
+          <div class="worker">
+            <span class="worker-name">${worker.name}</span>
+            <span class="worker-power">พละกำลัง: ${worker.strength}, โชค: ${worker.luck}, ความเร็ว: ${worker.speed}</span>
+          </div>
+        `;
+      });
+    }
+
+    // Add Example Workers
+    addWorker("สมชาย", 50, 30, 20);
+    addWorker("สมหญิง", 60, 40, 25);
+  </script>
+</body>
+</html>
